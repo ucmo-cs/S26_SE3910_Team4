@@ -4,11 +4,22 @@ import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
 import Stepper from "../components/ui/Stepper";
 import { page, stack, section, grid2, rowBetween, row } from "../styles/layout";
-import { button, buttonPrimary, buttonGhost, divider, h2, input, label, muted, pill } from "../styles/ui";
+import { button, buttonPrimary, buttonGhost, divider, h2, input, label, muted } from "../styles/ui";
 
 type Topic = { id: string; name: string };
-type Branch = { id: string; name: string; topicIds: string[] };``
+type Branch = { id: string; name: string; topicIds: string[] };
 type Slot = { id: string; dateLabel: string; timeLabel: string; isBooked: boolean };
+type Appointment = {
+  id: string;
+  topicId: string;
+  topicName: string;
+  branchId: string;
+  branchName: string;
+  dateLabel: string;
+  timeLabel: string;
+  customerName: string;
+  customerEmail: string;
+};
 
 const topics: Topic[] = [
   { id: "t1", name: "Open a new account" },
@@ -87,7 +98,7 @@ function AppointmentCreate() {
     (step === "details" && customerName.trim().length > 0 && customerEmail.trim().length > 0) ||
     step === "confirm";
 
-  function saveAppointment(appointment: any) {
+  function saveAppointment(appointment: Appointment) {
     try {
       const raw = localStorage.getItem("appointments");
       const arr = raw ? JSON.parse(raw) : [];

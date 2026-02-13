@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
@@ -21,22 +21,18 @@ function AppointmentDetail() {
   const params = useParams();
   const location = useLocation();
   const appointmentId = params.appointmentId ?? "unknown";
-
-  const [appointment, setAppointment] = useState<Appointment | null>(
-    (location.state as Appointment) ?? null
-  );
-
-  useEffect(() => {
-    if (appointment) return;
+  const appointment = useMemo(() => {
+    const routeState = location.state as Appointment | null;
+    if (routeState) return routeState;
     try {
       const raw = localStorage.getItem("appointments");
       const arr: Appointment[] = raw ? JSON.parse(raw) : [];
-      const found = arr.find((a) => a.id === appointmentId);
-      if (found) setAppointment(found);
+      return arr.find((a) => a.id === appointmentId) ?? null;
     } catch (e) {
       console.warn("failed to read appointments", e);
+      return null;
     }
-  }, [appointmentId]); // eslint-disable-line
+  }, [appointmentId, location.state]);
 
   if (!appointment) {
     return (
