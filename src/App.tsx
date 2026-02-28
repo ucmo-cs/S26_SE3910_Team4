@@ -6,11 +6,17 @@ import AppointmentList from "./pages/AppointmentList";
 import AppointmentCreate from "./pages/AppointmentCreate";
 import AppointmentDetail from "./pages/AppointmentDetail";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* Login route WITHOUT AppShell */}
+        <Route path="/login" element={<Login />} />
+
+        {/* All other routes wrapped in AppShell */}
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
           <Route path="/appointments" element={<AppointmentList />} />
@@ -18,6 +24,7 @@ function App() {
           <Route path="/appointments/:appointmentId" element={<AppointmentDetail />} />
           <Route path="*" element={<NotFound />} />
         </Route>
+
       </Routes>
     </BrowserRouter>
   );
