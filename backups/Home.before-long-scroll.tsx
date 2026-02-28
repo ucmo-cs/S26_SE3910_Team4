@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { page, stack } from "../styles/layout";
+import { page, row, stack } from "../styles/layout";
 import { button, buttonPrimary, muted } from "../styles/ui";
 
 type MenuSection = {
@@ -9,16 +9,6 @@ type MenuSection = {
   headline: string;
   description: string;
   highlights: string[];
-};
-
-type Service = {
-  title: string;
-  summary: string;
-};
-
-type Faq = {
-  q: string;
-  a: string;
 };
 
 const menuSections: MenuSection[] = [
@@ -72,22 +62,6 @@ const menuSections: MenuSection[] = [
   },
 ];
 
-const services: Service[] = [
-  { title: "Checking & Savings", summary: "Flexible account options for daily spending and long-term savings goals." },
-  { title: "Credit Cards", summary: "Card services with fraud monitoring, alerts, and account controls." },
-  { title: "Home Loans", summary: "Mortgage and refinance support with local lending specialists." },
-  { title: "Auto Loans", summary: "Competitive financing options for new and used vehicle purchases." },
-  { title: "Small Business", summary: "Business checking, payment tools, and lending support for growth." },
-  { title: "Financial Planning", summary: "Guidance for budgeting, saving, and milestone-based planning." },
-];
-
-const faqs: Faq[] = [
-  { q: "How do I book a branch appointment?", a: "Use Book Appointment in the hero section, select topic, branch, and available time slot." },
-  { q: "Can I view my scheduled visits later?", a: "Yes. Open View Appointments to review upcoming and previously booked mock appointments." },
-  { q: "What services can I discuss in branch?", a: "Account opening, card support, lending questions, and general banking assistance." },
-  { q: "Is this site connected to a live backend?", a: "This prototype uses local storage and mock data for demonstration." },
-];
-
 function Home() {
   const [activeSectionId, setActiveSectionId] = useState("about");
   const activeSection = useMemo(
@@ -103,9 +77,7 @@ function Home() {
             <div className="max-w-2xl">
               <h1 className="text-3xl font-semibold tracking-tight">Commerce Bank</h1>
               <p className="mt-3 text-emerald-50">
-                Banking services for everyday needs, major milestones, and
-                <br />
-                in-person guidance when you need it.
+                Banking services for everyday needs, major milestones, and in-person guidance when you need it.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link to="/appointments/create" className={`${button} ${buttonPrimary} border border-emerald-500`}>
@@ -204,108 +176,17 @@ function Home() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white px-5 py-6">
-          <div className="text-xl font-semibold text-emerald-950">Featured Services</div>
-          <p className={`mt-1 ${muted}`}>Explore common products and support options available across branches and digital channels.</p>
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <div key={service.title} className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-                <div className="font-semibold text-emerald-950">{service.title}</div>
-                <div className="mt-1 text-sm text-emerald-800">{service.summary}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white px-5 py-6">
-          <div className="text-xl font-semibold text-emerald-950">Community Impact</div>
-          <p className={`mt-2 ${muted}`}>
-            We support local neighborhoods through volunteer events, education programs, and small business initiatives.
-          </p>
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div className="rounded-lg border border-emerald-200 p-4">
-              <div className="text-sm font-semibold text-emerald-950">Financial literacy programs</div>
-              <div className="mt-1 text-sm text-emerald-800">
-                Workshops and coaching sessions for students, families, and first-time account holders.
-              </div>
-            </div>
-            <div className="rounded-lg border border-emerald-200 p-4">
-              <div className="text-sm font-semibold text-emerald-950">Small business partnerships</div>
-              <div className="mt-1 text-sm text-emerald-800">
-                Local sponsorships, mentoring programs, and practical business banking support.
-              </div>
-            </div>
-            <div className="rounded-lg border border-emerald-200 p-4">
-              <div className="text-sm font-semibold text-emerald-950">Community service projects</div>
-              <div className="mt-1 text-sm text-emerald-800">
-                Employee volunteer initiatives focused on neighborhood revitalization and outreach.
-              </div>
-            </div>
-            <div className="rounded-lg border border-emerald-200 p-4">
-              <div className="text-sm font-semibold text-emerald-950">Local impact grants</div>
-              <div className="mt-1 text-sm text-emerald-800">
-                Funding support for nonprofits and programs that improve education and financial wellbeing.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-emerald-900 px-6 py-8 text-white">
-          <div className="text-2xl font-semibold">Need help from a banker?</div>
-          <p className="mt-2 max-w-2xl text-emerald-100">
-            Schedule an in-person appointment for account support, lending questions, or service guidance.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link to="/appointments/create" className={`${button} bg-white text-emerald-950 hover:bg-emerald-100`}>
-              Start Booking
+        <section className="border-t border-emerald-200 pt-4">
+          <div className="text-sm font-semibold text-emerald-900">Quick links</div>
+          <div className={`${row} mt-2 flex-wrap`}>
+            <Link to="/appointments/create" className="text-sm font-medium text-emerald-800 hover:text-emerald-950">
+              Book Branch Visit
             </Link>
-            <Link
-              to="/appointments"
-              className={`${button} border border-emerald-600 bg-emerald-800 text-white hover:bg-emerald-700`}
-            >
-              Manage Appointments
+            <Link to="/appointments" className="text-sm font-medium text-emerald-800 hover:text-emerald-950">
+              Scheduled Appointments
             </Link>
           </div>
         </section>
-
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50/60 px-5 py-6">
-          <div className="text-xl font-semibold text-emerald-950">How It Works</div>
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
-            <div className="rounded-xl bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Step 1</div>
-              <div className="mt-1 font-semibold text-emerald-950">Choose a service</div>
-              <div className="mt-1 text-sm text-emerald-800">Select account help, lending, card support, or planning.</div>
-            </div>
-            <div className="rounded-xl bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Step 2</div>
-              <div className="mt-1 font-semibold text-emerald-950">Pick a branch</div>
-              <div className="mt-1 text-sm text-emerald-800">Find the location that best fits your schedule and needs.</div>
-            </div>
-            <div className="rounded-xl bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Step 3</div>
-              <div className="mt-1 font-semibold text-emerald-950">Choose a time</div>
-              <div className="mt-1 text-sm text-emerald-800">Reserve an open slot and confirm your details.</div>
-            </div>
-            <div className="rounded-xl bg-white p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Step 4</div>
-              <div className="mt-1 font-semibold text-emerald-950">Meet your banker</div>
-              <div className="mt-1 text-sm text-emerald-800">Arrive at branch and get personalized guidance.</div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white px-5 py-6">
-          <div className="text-xl font-semibold text-emerald-950">Frequently Asked Questions</div>
-          <div className="mt-4 space-y-2">
-            {faqs.map((faq) => (
-              <details key={faq.q} className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-3">
-                <summary className="cursor-pointer list-none font-semibold text-emerald-950">{faq.q}</summary>
-                <p className="mt-2 text-sm text-emerald-800">{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
       </div>
     </div>
   );

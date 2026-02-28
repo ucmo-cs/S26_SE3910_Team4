@@ -163,7 +163,9 @@ function AppointmentCreate() {
                   <button
                     key={t.id}
                     type="button"
-                    className={`${button} ${t.id === topicId ? "bg-slate-900 text-white" : "bg-white border"}`}
+                    className={`${button} ${
+                      t.id === topicId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
+                    }`}
                     onClick={() => {
                       setTopicId(t.id);
                       setBranchId("");
@@ -191,7 +193,9 @@ function AppointmentCreate() {
                   <button
                     key={b.id}
                     type="button"
-                    className={`${button} ${b.id === branchId ? "bg-slate-900 text-white" : "bg-white border"}`}
+                    className={`${button} ${
+                      b.id === branchId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
+                    }`}
                     onClick={() => {
                       setBranchId(b.id);
                       setSlotId("");
@@ -222,7 +226,9 @@ function AppointmentCreate() {
                   <button
                     key={s.id}
                     type="button"
-                    className={`${button} ${s.id === slotId ? "bg-slate-900 text-white" : "bg-white border"}`}
+                    className={`${button} ${
+                      s.id === slotId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
+                    }`}
                     onClick={() => setSlotId(s.id)}
                   >
                     {s.dateLabel} • {s.timeLabel}

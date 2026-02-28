@@ -1,4 +1,4 @@
-export const appBg = "min-h-screen bg-slate-50 text-slate-900";
+export const appBg = "min-h-screen bg-emerald-50 text-emerald-950";
 
 export const page = "mx-auto w-full max-w-screen-lg px-4 py-6";
 export const stack = "flex flex-col gap-4";

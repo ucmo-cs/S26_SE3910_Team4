@@ -14,10 +14,10 @@ function Stepper(props: Props) {
         const isDone = idx < props.currentIndex;
 
         const tone = isCurrent
-          ? "bg-slate-900 text-white border-slate-900"
+          ? "bg-emerald-700 text-white border-emerald-700"
           : isDone
           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-          : "bg-white text-slate-600 border-slate-200";
+          : "bg-white text-emerald-800 border-emerald-200";
 
         return (
           <span key={s} className={`${pill} ${tone}`}>
