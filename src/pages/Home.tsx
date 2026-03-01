@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import heroImage from "../assets/hero-image.png";
 import { page, stack } from "../styles/layout";
 import { button, buttonPrimary, muted } from "../styles/ui";
 
@@ -118,11 +119,12 @@ function Home() {
             </div>
 
             <div className="relative h-48 overflow-hidden rounded-xl border border-emerald-300/40 bg-emerald-500/20 md:h-56">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/40 via-emerald-400/30 to-emerald-300/20" />
+              <img src={heroImage} alt="Commerce Bank team helping customers at a branch" className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-emerald-700/45" />
               <div className="absolute inset-0 bg-black/15" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="text-xs uppercase tracking-wide text-emerald-100">Image placeholder</div>
-                <div className="text-lg font-semibold text-white">Hero image area</div>
+                <div className="text-xs uppercase tracking-wide text-emerald-100">Branch Experience</div>
+                <div className="text-lg font-semibold text-white">Personal support for every financial step</div>
               </div>
             </div>
           </div>
