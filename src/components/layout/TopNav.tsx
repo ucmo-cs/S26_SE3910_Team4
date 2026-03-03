@@ -24,6 +24,13 @@ function TopNav() {
           >
             Book
           </NavLink>
+
+          <NavLink
+            to="/login"
+            className={({ isActive }) => (isActive ? `${linkBase} ${linkActive}` : `${linkBase} ${linkIdle}`)}
+          >
+            Login
+          </NavLink>
         </div>
       </div>
     </div>
