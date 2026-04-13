@@ -1,14 +1,15 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
 import Stepper from "../components/ui/Stepper";
 import { page, stack, section, grid2, rowBetween, row } from "../styles/layout";
-import { button, buttonPrimary, buttonGhost, divider, h2, input, label, muted } from "../styles/ui";
+import { button, buttonPrimary, buttonGhost, buttonSecondary, divider, h2, input, label, muted } from "../styles/ui";
 
-type Topic = { id: string; name: string };
-type Branch = { id: string; name: string; topicIds: string[] };
-type Slot = { id: string; dateLabel: string; timeLabel: string; isBooked: boolean };
+type Topic = { id: string; name: string; summary: string };
+type Branch = { id: string; name: string; address: string; topicIds: string[] };
+type Slot = { id: string; dateKey: string; dateLabel: string; timeLabel: string };
+type AvailableDate = { key: string; label: string; weekday: string; dayNumber: string; isClosed: boolean };
 type Appointment = {
   id: string;
   topicId: string;
@@ -19,45 +20,178 @@ type Appointment = {
   timeLabel: string;
   customerName: string;
   customerEmail: string;
+  customerPhone: string;
+  comments: string;
 };
 
 const topics: Topic[] = [
-  { id: "t1", name: "Open a new account" },
-  { id: "t2", name: "Credit card support" },
-  { id: "t3", name: "Loan consultation" },
-  { id: "t4", name: "Mortgage questions" },
+  {
+    id: "t1",
+    name: "Checking & Savings",
+    summary: "Flexible account options for daily spending and long-term savings goals.",
+  },
+  {
+    id: "t2",
+    name: "Credit Cards",
+    summary: "Card services with fraud monitoring, alerts, and account controls.",
+  },
+  {
+    id: "t3",
+    name: "Auto Loans",
+    summary: "Competitive financing options for new and used vehicle purchases.",
+  },
+  {
+    id: "t4",
+    name: "Home Loans",
+    summary: "Mortgage and refinance support with local lending specialists.",
+  },
+  {
+    id: "t5",
+    name: "Small Business",
+    summary: "Business checking, payment tools, and lending support for growth.",
+  },
+  {
+    id: "t6",
+    name: "Financial Planning",
+    summary: "Guidance for budgeting, saving, and milestone-based planning.",
+  },
 ];
 
 const branches: Branch[] = [
-  { id: "b1", name: "Downtown Branch", topicIds: ["t1", "t2", "t4"] },
-  { id: "b2", name: "West Branch", topicIds: ["t2", "t3"] },
-  { id: "b3", name: "East Branch", topicIds: ["t1", "t3", "t4"] },
+  { id: "b1", name: "Plaza Branch", address: "118 W 47th St", topicIds: ["t1", "t2", "t4", "t6"] },
+  { id: "b2", name: "South State Line Branch", address: "8901 State Line Rd", topicIds: ["t1", "t2", "t3", "t5"] },
+  { id: "b3", name: "Downtown Branch", address: "804 E 12th St", topicIds: ["t1", "t2", "t4", "t6"] },
+  { id: "b4", name: "Rosedale Branch", address: "1906 W 43rd Ave", topicIds: ["t1", "t2", "t5"] },
+  { id: "b5", name: "Brookside Branch", address: "6336 Brookside Plaza", topicIds: ["t1", "t2", "t3", "t4", "t6"] },
+  { id: "b6", name: "Leawood Branch", address: "13441 State Line Rd", topicIds: ["t1", "t2", "t3", "t5", "t6"] },
 ];
 
-const allSlots: Slot[] = [
-  { id: "s1", dateLabel: "Fri, Feb 20", timeLabel: "9:00 AM", isBooked: false },
-  { id: "s2", dateLabel: "Fri, Feb 20", timeLabel: "9:30 AM", isBooked: true },
-  { id: "s3", dateLabel: "Fri, Feb 20", timeLabel: "10:00 AM", isBooked: false },
-  { id: "s4", dateLabel: "Fri, Feb 20", timeLabel: "10:30 AM", isBooked: false },
-  { id: "s5", dateLabel: "Sat, Feb 21", timeLabel: "11:00 AM", isBooked: false },
-  { id: "s6", dateLabel: "Sat, Feb 21", timeLabel: "11:30 AM", isBooked: true },
-  { id: "s7", dateLabel: "Sat, Feb 21", timeLabel: "1:00 PM", isBooked: false },
-];
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+
+const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+});
+
+const dayNumberFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+});
+
+const timeFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+function buildSlots(): Slot[] {
+  const slots: Slot[] = [];
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
+  startDate.setDate(startDate.getDate() + 3);
+
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+
+  for (const date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+    const currentDate = new Date(date);
+
+    if (currentDate.getDay() === 0) {
+      continue;
+    }
+
+    const slotTimes =
+      currentDate.getDay() === 6
+        ? [
+            { hour: 9, minute: 30 },
+            { hour: 10, minute: 0 },
+            { hour: 10, minute: 30 },
+            { hour: 11, minute: 0 },
+            { hour: 11, minute: 30 },
+          ]
+        : Array.from({ length: 16 }, (_, index) => ({
+            hour: 9 + Math.floor(index / 2),
+            minute: index % 2 === 0 ? 0 : 30,
+          }));
+
+    for (const { hour, minute } of slotTimes) {
+      slots.push({
+        id: `${currentDate.toISOString().slice(0, 10)}-${hour}-${minute}`,
+        dateKey: currentDate.toISOString().slice(0, 10),
+        dateLabel: dateFormatter.format(currentDate),
+        timeLabel: timeFormatter.format(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hour, minute)),
+      });
+    }
+  }
+
+  return slots;
+}
+
+const allSlots: Slot[] = buildSlots();
+
+function buildAvailableDates(): AvailableDate[] {
+  const dates: AvailableDate[] = [];
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
+  startDate.setDate(startDate.getDate() + 3);
+
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+
+  for (const date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+    const currentDate = new Date(date);
+    dates.push({
+      key: currentDate.toISOString().slice(0, 10),
+      label: dateFormatter.format(currentDate),
+      weekday: weekdayFormatter.format(currentDate),
+      dayNumber: dayNumberFormatter.format(currentDate),
+      isClosed: currentDate.getDay() === 0,
+    });
+  }
+
+  return dates;
+}
+
+const DAYS_PER_WEEK_VIEW = 7;
+const availableDates: AvailableDate[] = buildAvailableDates();
 
 type StepId = "topic" | "branch" | "time" | "details" | "confirm";
 
+function formatPhoneNumber(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function isValidPhoneNumber(value: string) {
+  return /^\d{3}-\d{3}-\d{4}$/.test(value.trim());
+}
+
 function AppointmentCreate() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedServiceId = searchParams.get("service");
+  const initialTopicId = topics.some((topic) => topic.id === requestedServiceId) ? requestedServiceId ?? "" : "";
 
   const steps = ["Topic", "Branch", "Time", "Details", "Confirm"];
-  const [step, setStep] = useState<StepId>("topic");
+  const [step, setStep] = useState<StepId>(initialTopicId ? "branch" : "topic");
 
-  const [topicId, setTopicId] = useState("");
+  const [topicId, setTopicId] = useState(initialTopicId);
   const [branchId, setBranchId] = useState("");
   const [slotId, setSlotId] = useState("");
+  const [selectedDateKey, setSelectedDateKey] = useState(availableDates.find((date) => !date.isClosed)?.key ?? "");
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [comments, setComments] = useState("");
+  const [weekStartIndex, setWeekStartIndex] = useState(0);
 
   const currentIndex = useMemo(() => {
     if (step === "topic") return 0;
@@ -74,8 +208,30 @@ function AppointmentCreate() {
   }, [topicId]);
 
   const selectedBranch = useMemo(() => branches.find((b) => b.id === branchId) ?? null, [branchId]);
-  const availableSlots = useMemo(() => allSlots.filter((s) => !s.isBooked), []);
+  const availableSlots = useMemo(
+    () => allSlots.filter((slot) => slot.dateKey === selectedDateKey),
+    [selectedDateKey],
+  );
   const selectedSlot = useMemo(() => allSlots.find((s) => s.id === slotId) ?? null, [slotId]);
+  const selectedDateIndex = useMemo(
+    () => availableDates.findIndex((date) => date.key === selectedDateKey),
+    [availableDates, selectedDateKey],
+  );
+  const visibleDates = useMemo(
+    () => availableDates.slice(weekStartIndex, weekStartIndex + DAYS_PER_WEEK_VIEW),
+    [availableDates, weekStartIndex],
+  );
+
+  useEffect(() => {
+    if (!initialTopicId) return;
+
+    setTopicId(initialTopicId);
+    setBranchId("");
+    setSlotId("");
+    setSelectedDateKey(availableDates.find((date) => !date.isClosed)?.key ?? "");
+    setWeekStartIndex(0);
+    setStep("branch");
+  }, [initialTopicId]);
 
   function goNext() {
     if (step === "topic") setStep("branch");
@@ -95,8 +251,13 @@ function AppointmentCreate() {
     (step === "topic" && !!topicId) ||
     (step === "branch" && !!branchId) ||
     (step === "time" && !!slotId) ||
-    (step === "details" && customerName.trim().length > 0 && customerEmail.trim().length > 0) ||
+    (step === "details" &&
+      customerName.trim().length > 0 &&
+      isValidEmail(customerEmail) &&
+      isValidPhoneNumber(customerPhone)) ||
     step === "confirm";
+  const showEmailError = step === "details" && customerEmail.trim().length > 0 && !isValidEmail(customerEmail);
+  const showPhoneError = step === "details" && customerPhone.trim().length > 0 && !isValidPhoneNumber(customerPhone);
 
   function saveAppointment(appointment: Appointment) {
     try {
@@ -124,6 +285,8 @@ function AppointmentCreate() {
       timeLabel: selectedSlot?.timeLabel ?? "",
       customerName: customerName || "Guest",
       customerEmail: customerEmail || "",
+      customerPhone: customerPhone || "",
+      comments: comments.trim(),
     };
 
     console.debug("submitMock: attempting to save", appointment);
@@ -142,9 +305,9 @@ function AppointmentCreate() {
       <div className={stack}>
         <PageHeader
           title="Book an Appointment"
-          subtitle="Mock wizard (no backend). Select a topic, branch, time, then confirm."
+          subtitle="Select a topic, branch, time, then confirm."
           right={
-            <Link to="/appointments" className={button}>
+            <Link to="/appointments" className={`${button} ${buttonSecondary}`}>
               View Appointments
             </Link>
           }
@@ -156,23 +319,28 @@ function AppointmentCreate() {
           <Card>
             <div className={section}>
               <div className={h2}>1) What can we help you with?</div>
-              <div className={muted}>Choose a topic. Branches will filter based on support.</div>
+              <div className={muted}>Choose a service. Branches will filter based on support.</div>
 
               <div className={grid2}>
                 {topics.map((t) => (
                   <button
                     key={t.id}
                     type="button"
-                    className={`${button} ${
-                      t.id === topicId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
+                    className={`rounded-xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-emerald-300 ${
+                      t.id === topicId
+                        ? "border-emerald-700 bg-emerald-700 text-white shadow-sm"
+                        : "border-emerald-200 bg-emerald-50/50 text-emerald-950 hover:border-emerald-400 hover:bg-white"
                     }`}
                     onClick={() => {
                       setTopicId(t.id);
                       setBranchId("");
                       setSlotId("");
+                      setSelectedDateKey(availableDates.find((date) => !date.isClosed)?.key ?? "");
+                      setWeekStartIndex(0);
                     }}
                   >
-                    {t.name}
+                    <div className="font-semibold">{t.name}</div>
+                    <div className={`mt-1 text-sm ${t.id === topicId ? "text-emerald-50" : "text-emerald-800"}`}>{t.summary}</div>
                   </button>
                 ))}
               </div>
@@ -189,21 +357,43 @@ function AppointmentCreate() {
               </div>
 
               <div className={grid2}>
-                {availableBranches.map((b) => (
-                  <button
-                    key={b.id}
-                    type="button"
-                    className={`${button} ${
-                      b.id === branchId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
-                    }`}
-                    onClick={() => {
-                      setBranchId(b.id);
-                      setSlotId("");
-                    }}
-                  >
-                    {b.name}
-                  </button>
-                ))}
+                {branches.map((b) => {
+                  const supportsTopic = b.topicIds.includes(topicId);
+
+                  return (
+                    <div key={b.id} className="group relative">
+                      <button
+                        type="button"
+                        disabled={!supportsTopic}
+                        className={`w-full rounded-xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-emerald-300 ${
+                          !supportsTopic
+                            ? "cursor-not-allowed border-emerald-200 bg-slate-100 text-slate-400"
+                            : b.id === branchId
+                              ? "border-emerald-700 bg-emerald-700 text-white shadow-sm"
+                              : "border-emerald-200 bg-white text-emerald-950 hover:border-emerald-400 hover:bg-emerald-50/50"
+                        }`}
+                        onClick={() => {
+                        if (!supportsTopic) return;
+                        setBranchId(b.id);
+                        setSlotId("");
+                        setSelectedDateKey(availableDates.find((date) => !date.isClosed)?.key ?? "");
+                        setWeekStartIndex(0);
+                      }}
+                    >
+                        <div className="font-semibold">{b.name}</div>
+                        <div className={`mt-1 text-sm ${!supportsTopic ? "text-slate-500" : b.id === branchId ? "text-emerald-100" : "text-emerald-700"}`}>
+                          {b.address}
+                        </div>
+                      </button>
+
+                      {!supportsTopic && selectedTopic ? (
+                        <div className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 hidden w-max max-w-64 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white shadow-lg group-hover:block">
+                          This branch doesn't offer {selectedTopic.name}.
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
 
               {availableBranches.length === 0 ? (
@@ -221,22 +411,96 @@ function AppointmentCreate() {
                 Branch: <span className="font-semibold">{selectedBranch ? selectedBranch.name : "None"}</span>
               </div>
 
+              <div className="relative py-1">
+                <button
+                  type="button"
+                  className={`${button} ${buttonGhost} absolute left-0 top-1/2 z-10 -translate-y-1/2`}
+                  disabled={weekStartIndex === 0}
+                  onClick={() => {
+                    if (weekStartIndex > 0) {
+                      const nextWeekStart = Math.max(0, weekStartIndex - DAYS_PER_WEEK_VIEW);
+                      setWeekStartIndex(nextWeekStart);
+                      if (selectedDateIndex < nextWeekStart || selectedDateIndex >= weekStartIndex) {
+                        setSelectedDateKey(availableDates[nextWeekStart].key);
+                      }
+                      setSlotId("");
+                    }
+                  }}
+                >
+                  Previous Week
+                </button>
+
+                <div className="overflow-x-auto px-28 pb-1">
+                  <div className="flex min-w-max justify-center gap-4 px-1">
+                  {visibleDates.map((date) => (
+                    <button
+                      key={date.key}
+                      type="button"
+                      disabled={date.isClosed}
+                      className={`flex min-w-20 flex-col items-center rounded-xl border px-4 py-3 text-center transition focus:outline-none focus:ring-2 focus:ring-emerald-300 ${
+                        date.isClosed
+                          ? "cursor-not-allowed border-emerald-200 bg-slate-100 text-slate-400"
+                          : date.key === selectedDateKey
+                          ? "border-emerald-700 bg-emerald-700 text-white shadow-sm"
+                          : "border-emerald-200 bg-white text-emerald-900 hover:border-emerald-400 hover:bg-emerald-50"
+                      }`}
+                      onClick={() => {
+                        if (date.isClosed) return;
+                        setSelectedDateKey(date.key);
+                        setSlotId("");
+                      }}
+                    >
+                      <span className={`text-xs font-semibold uppercase tracking-wide ${date.isClosed ? "text-slate-500" : date.key === selectedDateKey ? "text-emerald-100" : "text-emerald-600"}`}>
+                        {date.weekday}
+                      </span>
+                      <span className="mt-1 text-2xl font-semibold leading-none">{date.dayNumber}</span>
+                      <span className={`mt-1 text-xs ${date.isClosed ? "text-slate-500" : date.key === selectedDateKey ? "text-emerald-100" : "text-emerald-700"}`}>
+                        {date.label.replace(` ${date.dayNumber}`, "")}
+                      </span>
+                      {date.isClosed ? <span className="mt-1 text-xs font-medium text-slate-500">Closed</span> : null}
+                    </button>
+                  ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={`${button} ${buttonGhost} absolute right-0 top-1/2 z-10 -translate-y-1/2`}
+                  disabled={weekStartIndex + DAYS_PER_WEEK_VIEW >= availableDates.length}
+                  onClick={() => {
+                    if (weekStartIndex + DAYS_PER_WEEK_VIEW < availableDates.length) {
+                      const nextWeekStart = weekStartIndex + DAYS_PER_WEEK_VIEW;
+                      setWeekStartIndex(nextWeekStart);
+                      if (selectedDateIndex < nextWeekStart || selectedDateIndex >= nextWeekStart + DAYS_PER_WEEK_VIEW) {
+                        setSelectedDateKey(availableDates[nextWeekStart].key);
+                      }
+                      setSlotId("");
+                    }
+                  }}
+                >
+                  Next Week
+                </button>
+              </div>
+
               <div className={grid2}>
                 {availableSlots.map((s) => (
                   <button
                     key={s.id}
                     type="button"
-                    className={`${button} ${
+                    className={`min-h-11 py-1.5 ${
                       s.id === slotId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
-                    }`}
+                    } ${button}`}
                     onClick={() => setSlotId(s.id)}
                   >
-                    {s.dateLabel} • {s.timeLabel}
+                    <span className="text-sm font-semibold">{s.timeLabel}</span>
                   </button>
                 ))}
               </div>
 
-              <div className={muted}>Booked slots are hidden in this prototype.</div>
+              {availableSlots.length === 0 ? (
+                <div className={muted}>This branch is closed on Sundays. Please choose another day.</div>
+              ) : null}
+
             </div>
           </Card>
         ) : null}
@@ -245,20 +509,55 @@ function AppointmentCreate() {
           <Card>
             <div className={section}>
               <div className={h2}>4) Your details</div>
-              <div className={muted}>Enter name and email (mock). No email is actually sent.</div>
+              <div className={muted}>Enter your contact details for this appointment.</div>
 
-              <div className={grid2}>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div className={section}>
-                  <div className={label}>Name</div>
-                  <input className={input} value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+                  <div className={section}>
+                    <div className={label}>Name</div>
+                    <input
+                      className={input}
+                      placeholder="John Smith"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className={section}>
+                    <div className={label}>Email</div>
+                    <input
+                      className={`${input} ${showEmailError ? "border-red-500 focus:ring-red-200" : ""}`}
+                      type="email"
+                      inputMode="email"
+                      placeholder="name@example.com"
+                      aria-invalid={showEmailError}
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                    />
+                    {showEmailError ? <div className="mt-2 text-sm text-red-700">Enter a valid email address.</div> : null}
+                  </div>
+
+                  <div className={section}>
+                    <div className={label}>Phone Number</div>
+                    <input
+                      className={`${input} ${showPhoneError ? "border-red-500 focus:ring-red-200" : ""}`}
+                      inputMode="numeric"
+                      placeholder="555-555-5555"
+                      aria-invalid={showPhoneError}
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(formatPhoneNumber(e.target.value))}
+                    />
+                    {showPhoneError ? <div className="mt-2 text-sm text-red-700">Enter a valid 10-digit phone number.</div> : null}
+                  </div>
                 </div>
 
-                <div className={section}>
-                  <div className={label}>Email</div>
-                  <input
-                    className={input}
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
+                <div className="flex flex-col gap-3">
+                  <div className={label}>Comments</div>
+                  <textarea
+                    className={`${input} h-full min-h-0 resize-none`}
+                    placeholder="Add anything you'd like the branch to know before your appointment."
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
                   />
                 </div>
               </div>
@@ -270,7 +569,7 @@ function AppointmentCreate() {
           <Card>
             <div className={section}>
               <div className={h2}>5) Confirm</div>
-              <div className={muted}>Review the appointment info before “reserving” (mock).</div>
+              <div className={muted}>Review your appointment details before reserving your visit.</div>
 
               <div className={divider} />
 
@@ -294,6 +593,14 @@ function AppointmentCreate() {
                 <div className={rowBetween}>
                   <div className="font-semibold">Email</div>
                   <div>{customerEmail || "-"}</div>
+                </div>
+                <div className={rowBetween}>
+                  <div className="font-semibold">Phone</div>
+                  <div>{customerPhone || "-"}</div>
+                </div>
+                <div className={rowBetween}>
+                  <div className="font-semibold">Comments</div>
+                  <div className="max-w-[60%] text-right">{comments || "-"}</div>
                 </div>
               </div>
 
@@ -325,9 +632,6 @@ function AppointmentCreate() {
             >
               Next
             </button>
-          </div>
-          <div className={`mt-2 ${muted}`}>
-            This is a prototype: availability + reservation are simulated in-memory only.
           </div>
         </Card>
       </div>

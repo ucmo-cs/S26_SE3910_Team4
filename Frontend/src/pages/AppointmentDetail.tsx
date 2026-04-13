@@ -15,6 +15,8 @@ type Appointment = {
   timeLabel?: string;
   customerName?: string;
   customerEmail?: string;
+  customerPhone?: string;
+  comments?: string;
 };
 
 function AppointmentDetail() {
@@ -97,6 +99,8 @@ function AppointmentDetail() {
             </div>
             <div className={muted}>Name: {appointment.customerName ?? "-"}</div>
             <div className={muted}>Email: {appointment.customerEmail ?? "-"}</div>
+            <div className={muted}>Phone: {appointment.customerPhone ?? "-"}</div>
+            <div className={muted}>Comments: {appointment.comments ?? "-"}</div>
 
             <div className={divider} />
           </div>

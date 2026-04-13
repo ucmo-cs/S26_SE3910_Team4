@@ -13,6 +13,7 @@ function TopNav() {
         <div className={navLinks}>
           <NavLink
             to="/appointments"
+            end
             className={({ isActive }) => (isActive ? `${linkBase} ${linkActive}` : `${linkBase} ${linkIdle}`)}
           >
             Appointments

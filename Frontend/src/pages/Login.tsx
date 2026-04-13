@@ -11,6 +11,7 @@ const Login: React.FC = () => {
     e.preventDefault();
 
     if (username === "admin" && password === "password") {
+      localStorage.setItem("authUser", username);
       navigate("/"); // redirect to home
     } else {
       alert("Invalid credentials");
