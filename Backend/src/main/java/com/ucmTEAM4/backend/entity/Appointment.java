@@ -29,4 +29,5 @@ public class Appointment {
     private String customerEmail;
     private String customerPhone;
     private String comments;
+    private String userId; // Add user ID to associate appointments with users
 }

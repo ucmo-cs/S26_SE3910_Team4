@@ -187,9 +187,36 @@ function AppointmentCreate() {
   const [slotId, setSlotId] = useState("");
   const [selectedDateKey, setSelectedDateKey] = useState(availableDates.find((date) => !date.isClosed)?.key ?? "");
 
-  const [customerName, setCustomerName] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerName, setCustomerName] = useState(() => {
+    const userProfile = localStorage.getItem("userProfile");
+    if (!userProfile) return "";
+    try {
+      const profile = JSON.parse(userProfile);
+      return profile.firstName && profile.lastName ? `${profile.firstName} ${profile.lastName}` : "";
+    } catch (e) {
+      return "";
+    }
+  });
+  const [customerEmail, setCustomerEmail] = useState(() => {
+    const userProfile = localStorage.getItem("userProfile");
+    if (!userProfile) return "";
+    try {
+      const profile = JSON.parse(userProfile);
+      return profile.email || "";
+    } catch (e) {
+      return "";
+    }
+  });
+  const [customerPhone, setCustomerPhone] = useState(() => {
+    const userProfile = localStorage.getItem("userProfile");
+    if (!userProfile) return "";
+    try {
+      const profile = JSON.parse(userProfile);
+      return profile.phone || "";
+    } catch (e) {
+      return "";
+    }
+  });
   const [comments, setComments] = useState("");
   const [weekStartIndex, setWeekStartIndex] = useState(0);
 
@@ -273,10 +300,32 @@ function AppointmentCreate() {
     }
   }
 
-  function submitMock() {
-    const id = `a-${Date.now()}`;
-    const appointment = {
-      id,
+  async function saveAppointmentToBackend(appointment: Omit<Appointment, 'id'>) {
+    try {
+      const response = await fetch('http://localhost:8080/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(appointment),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const savedAppointment = await response.json();
+      console.debug("saveAppointmentToBackend: success", savedAppointment);
+      return savedAppointment;
+    } catch (e) {
+      console.warn("failed to save appointment to backend", e);
+      return null;
+    }
+  }
+
+  async function submitMock() {
+    const userId = localStorage.getItem("authUser") || "guest";
+    const appointmentData = {
       topicId: selectedTopic?.id ?? "",
       topicName: selectedTopic?.name ?? "",
       branchId: selectedBranch?.id ?? "",
@@ -287,17 +336,29 @@ function AppointmentCreate() {
       customerEmail: customerEmail || "",
       customerPhone: customerPhone || "",
       comments: comments.trim(),
+      userId: userId,
     };
 
-    console.debug("submitMock: attempting to save", appointment);
-    const ok = saveAppointment(appointment);
-    console.debug("submitMock: after save, stored:", JSON.parse(localStorage.getItem("appointments") || "[]"));
-    if (!ok) {
-      alert("Failed to save appointment to localStorage (see console).");
-      return;
-    }
+    console.debug("submitMock: attempting to save to backend", appointmentData);
 
-    navigate(`/appointments/${id}`, { state: appointment });
+    // Try to save to backend first
+    const savedAppointment = await saveAppointmentToBackend(appointmentData);
+
+    if (savedAppointment) {
+      // Success - navigate with the saved appointment
+      navigate(`/appointments/${savedAppointment.id}`, { state: savedAppointment });
+    } else {
+      // Fallback to localStorage
+      console.warn("Backend save failed, falling back to localStorage");
+      const id = `a-${Date.now()}`;
+      const localAppointment = { id, ...appointmentData };
+      const ok = saveAppointment(localAppointment);
+      if (!ok) {
+        alert("Failed to save appointment to localStorage (see console).");
+        return;
+      }
+      navigate(`/appointments/${id}`, { state: localAppointment });
+    }
   }
 
   return (
@@ -568,47 +629,60 @@ function AppointmentCreate() {
         {step === "confirm" ? (
           <Card>
             <div className={section}>
-              <div className={h2}>5) Confirm</div>
-              <div className={muted}>Review your appointment details before reserving your visit.</div>
+              <div className={h2}>5) Confirm Your Appointment</div>
+              <div className={muted}>Review all details before completing your reservation.</div>
 
-              <div className={divider} />
+              <div className="mt-8 space-y-6">
+                {/* Appointment Details Section */}
+                <div className="rounded-lg bg-emerald-50 p-6 border border-emerald-200">
+                  <div className="font-semibold text-emerald-950 mb-4">Appointment Details</div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-700">Topic:</span>
+                      <span className="font-medium text-emerald-950">{selectedTopic ? selectedTopic.name : "-"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-700">Branch:</span>
+                      <span className="font-medium text-emerald-950">{selectedBranch ? selectedBranch.name : "-"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-700">Date & Time:</span>
+                      <span className="font-medium text-emerald-950">{selectedSlot ? `${selectedSlot.dateLabel} at ${selectedSlot.timeLabel}` : "-"}</span>
+                    </div>
+                  </div>
+                </div>
 
-              <div className={section}>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Topic</div>
-                  <div>{selectedTopic ? selectedTopic.name : "-"}</div>
+                {/* Contact Information Section */}
+                <div className="rounded-lg bg-blue-50 p-6 border border-blue-200">
+                  <div className="font-semibold text-blue-950 mb-4">Your Information</div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-700">Name:</span>
+                      <span className="font-medium text-blue-950">{customerName || "-"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-700">Email:</span>
+                      <span className="font-medium text-blue-950 break-words text-right">{customerEmail || "-"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-700">Phone:</span>
+                      <span className="font-medium text-blue-950">{customerPhone || "-"}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Branch</div>
-                  <div>{selectedBranch ? selectedBranch.name : "-"}</div>
-                </div>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Time</div>
-                  <div>{selectedSlot ? `${selectedSlot.dateLabel} • ${selectedSlot.timeLabel}` : "-"}</div>
-                </div>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Name</div>
-                  <div>{customerName || "-"}</div>
-                </div>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Email</div>
-                  <div>{customerEmail || "-"}</div>
-                </div>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Phone</div>
-                  <div>{customerPhone || "-"}</div>
-                </div>
-                <div className={rowBetween}>
-                  <div className="font-semibold">Comments</div>
-                  <div className="max-w-[60%] text-right">{comments || "-"}</div>
-                </div>
+
+                {/* Comments Section */}
+                {comments && (
+                  <div className="rounded-lg bg-gray-50 p-6 border border-gray-200">
+                    <div className="font-semibold text-gray-950 mb-2">Additional Notes</div>
+                    <p className="text-gray-700">{comments}</p>
+                  </div>
+                )}
               </div>
 
-              <div className={divider} />
-
-              <div className={row}>
-                <button type="button" className={`${button} ${buttonPrimary}`} onClick={submitMock}>
-                  Confirm & Reserve (mock)
+              <div className="mt-8 flex gap-3">
+                <button type="button" className={`${button} ${buttonPrimary} flex-1`} onClick={submitMock}>
+                  ✓ Confirm & Reserve
                 </button>
                 <button type="button" className={`${button} ${buttonGhost}`} onClick={() => setStep("topic")}>
                   Start Over

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import heroImage from "../assets/hero-image.png";
 import { page, stack } from "../styles/layout";
 import { button, buttonPrimary, muted } from "../styles/ui";
@@ -19,9 +20,41 @@ const services: Service[] = [
 ];
 
 function Home() {
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const profile = localStorage.getItem("userProfile");
+    if (profile) {
+      setUserProfile(JSON.parse(profile));
+    }
+  }, []);
+
   return (
     <div className={page}>
       <div className={stack}>
+        {userProfile && (
+          <section className="rounded-xl bg-emerald-50 border border-emerald-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-emerald-900">
+                  Welcome back, {userProfile.firstName} {userProfile.lastName}!
+                </h2>
+                <p className="text-sm text-emerald-700 mt-1">
+                  Ready to manage your appointments or explore our services?
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/profile" className={`${button} bg-emerald-600 hover:bg-emerald-700 text-white`}>
+                  My Profile
+                </Link>
+                <Link to="/appointments" className={`${button} ${buttonPrimary}`}>
+                  My Appointments
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
         <section className="overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-600 px-6 py-8 text-white">
           <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-2">
             <div className="max-w-2xl">

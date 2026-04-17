@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
@@ -6,7 +6,7 @@ import { page, stack, section } from "../styles/layout";
 import { button, muted, divider } from "../styles/ui";
 
 type Appointment = {
-  id: string;
+  id: number;
   topicId?: string;
   topicName?: string;
   branchId?: string;
@@ -17,24 +17,64 @@ type Appointment = {
   customerEmail?: string;
   customerPhone?: string;
   comments?: string;
+  userId?: string;
 };
 
 function AppointmentDetail() {
   const params = useParams();
   const location = useLocation();
   const appointmentId = params.appointmentId ?? "unknown";
-  const appointment = useMemo(() => {
-    const routeState = location.state as Appointment | null;
-    if (routeState) return routeState;
-    try {
-      const raw = localStorage.getItem("appointments");
-      const arr: Appointment[] = raw ? JSON.parse(raw) : [];
-      return arr.find((a) => a.id === appointmentId) ?? null;
-    } catch (e) {
-      console.warn("failed to read appointments", e);
-      return null;
+  const [appointment, setAppointment] = useState<Appointment | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchAppointment() {
+      // First check if we have it from route state
+      const routeState = location.state as Appointment | null;
+      if (routeState) {
+        setAppointment(routeState);
+        setLoading(false);
+        return;
+      }
+
+      // Try to fetch from backend
+      try {
+        const response = await fetch(`http://localhost:8080/api/appointments/${appointmentId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: Appointment = await response.json();
+        setAppointment(data);
+      } catch (e) {
+        console.warn("Failed to fetch appointment from backend, falling back to localStorage", e);
+        // Fallback to localStorage
+        try {
+          const raw = localStorage.getItem("appointments");
+          const arr: Appointment[] = raw ? JSON.parse(raw) : [];
+          const found = arr.find((a) => a.id.toString() === appointmentId) ?? null;
+          setAppointment(found);
+        } catch (localError) {
+          console.warn("Failed to read from localStorage too", localError);
+          setError("Appointment not found");
+        }
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchAppointment();
   }, [appointmentId, location.state]);
+
+  if (loading) {
+    return (
+      <div className={page}>
+        <div className={stack}>
+          <PageHeader title="Appointment" subtitle="Loading..." />
+        </div>
+      </div>
+    );
+  }
 
   if (!appointment) {
     return (

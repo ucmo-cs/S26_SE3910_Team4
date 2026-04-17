@@ -40,9 +40,15 @@ Stores customer appointments
 - `customer_phone` (VARCHAR)
 - `comments` (VARCHAR)
 
-### 4. `notes` Table (Existing)
+### 5. `users` Table
+Stores user account information
 - `id` (BIGINT, Primary Key, Auto-increment)
-- `title` (VARCHAR)
+- `username` (VARCHAR, Unique)
+- `password` (VARCHAR) - Note: In production, passwords should be hashed
+- `email` (VARCHAR, Unique)
+- `first_name` (VARCHAR)
+- `last_name` (VARCHAR)
+- `phone` (VARCHAR)
 
 ## Setup Instructions
 
