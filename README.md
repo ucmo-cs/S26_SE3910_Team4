@@ -15,42 +15,34 @@ A full-stack web application for managing appointments with user authentication,
 ### Prerequisites
 - Java 17 or higher
 - Node.js 16 or higher
-- Docker (optional, for easy MySQL setup)
+- MySQL 8.0 or higher
 
-### Option 1: Docker Setup (Recommended)
+### Setup Steps
 
-1. **Start MySQL Database:**
+1. **Clone the repository:**
    ```bash
-   docker-compose up -d
+   git clone <your-repo-url>
+   cd S26_SE3910_Team4
    ```
 
-2. **Backend Setup:**
-   ```bash
-   cd Backend
-   ./mvnw spring-boot:run
-   ```
-
-3. **Frontend Setup:**
-   ```bash
-   cd Frontend
-   npm install
-   npm run dev
-   ```
-
-### Option 2: Local MySQL Setup
-
-1. **Install MySQL** and create database:
+2. **Setup MySQL Database:**
    - Install MySQL 8.0
-   - Create database: `team4_db`
-   - Create user: `root` with password `8459`
+   - Create a database (any name you prefer)
+   - Create a MySQL user with appropriate permissions
+   - Update `Backend/src/main/resources/application.properties` with your database details:
+     ```properties
+     spring.datasource.url=jdbc:mysql://localhost:3306/your_database_name
+     spring.datasource.username=your_mysql_username
+     spring.datasource.password=your_mysql_password
+     ```
 
-2. **Backend Setup:**
+3. **Backend Setup:**
    ```bash
    cd Backend
    ./mvnw spring-boot:run
    ```
 
-3. **Frontend Setup:**
+4. **Frontend Setup:**
    ```bash
    cd Frontend
    npm install
@@ -95,14 +87,15 @@ The application uses Hibernate to automatically create the following tables:
 ## Contributing
 
 1. Clone the repository
-2. Follow the Quick Start setup
-3. Create a feature branch
-4. Make your changes
-5. Test thoroughly
-6. Submit a pull request
+2. Setup your local MySQL database and update application.properties
+3. Follow the Quick Start setup
+4. Create a feature branch
+5. Make your changes
+6. Test thoroughly
+7. Submit a pull request
 
 ## Troubleshooting
 
 - **Port conflicts**: Backend runs on port 8080, Frontend on 5173
-- **Database connection**: Ensure MySQL is running and credentials match
+- **Database connection**: Ensure MySQL is running and credentials in application.properties are correct
 - **CORS issues**: Backend is configured to allow frontend origins

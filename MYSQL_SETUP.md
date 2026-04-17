@@ -11,6 +11,25 @@ Currently configured in `Backend/src/main/resources/application.properties`:
 - **Password**: 8459
 - **DDL Auto Mode**: update (Hibernate auto-creates/updates tables based on entity definitions)
 
+## For Team Members - Local Setup
+
+Each team member should modify `Backend/src/main/resources/application.properties` to match their local MySQL setup:
+
+```properties
+# Change these values to match your MySQL installation
+spring.datasource.url=jdbc:mysql://localhost:3306/your_database_name
+spring.datasource.username=your_mysql_username
+spring.datasource.password=your_mysql_password
+spring.jpa.hibernate.ddl-auto=update
+```
+
+### Setup Steps:
+1. Install MySQL on your local machine
+2. Create a database (any name you prefer)
+3. Create a MySQL user with appropriate permissions
+4. Update the application.properties file with your database details
+5. Start the backend - tables will be created automatically
+
 ## Tables Created Automatically
 
 ### 1. `topics` Table
