@@ -575,7 +575,7 @@ function AppointmentCreate() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <div className={section}>
                   <div className={section}>
-                    <div className={label}>Name</div>
+                    <div className={label}>Name <span className="text-red-600" title="Required field" aria-label="Required field">*</span></div>
                     <input
                       className={input}
                       placeholder="John Smith"
@@ -585,7 +585,7 @@ function AppointmentCreate() {
                   </div>
 
                   <div className={section}>
-                    <div className={label}>Email</div>
+                    <div className={label}>Email <span className="text-red-600" title="Required field" aria-label="Required field">*</span></div>
                     <input
                       className={`${input} ${showEmailError ? "border-red-500 focus:ring-red-200" : ""}`}
                       type="email"

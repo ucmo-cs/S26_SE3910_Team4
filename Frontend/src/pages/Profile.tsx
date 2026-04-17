@@ -215,7 +215,7 @@ const Profile: React.FC = () => {
 
               <div className={grid2}>
                 <div>
-                  <label className={label}>First Name</label>
+                  <label className={label}>First Name <span className="text-red-600" title="Required field" aria-label="Required field">*</span></label>
                   <input
                     type="text"
                     name="firstName"
@@ -226,7 +226,7 @@ const Profile: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className={label}>Last Name</label>
+                  <label className={label}>Last Name <span className="text-red-600" title="Required field" aria-label="Required field">*</span></label>
                   <input
                     type="text"
                     name="lastName"
@@ -239,7 +239,7 @@ const Profile: React.FC = () => {
               </div>
 
               <div>
-                <label className={label}>Email</label>
+                <label className={label}>Email <span className="text-red-600" title="Required field" aria-label="Required field">*</span></label>
                 <input
                   type="email"
                   name="email"
