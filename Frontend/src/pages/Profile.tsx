@@ -14,6 +14,28 @@ interface UserProfile {
   phone: string;
 }
 
+function sanitizePhone(value: string) {
+  return value.replace(/\D/g, "").slice(0, 10);
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function formatPhone(value: string) {
+  const digits = sanitizePhone(value);
+
+  if (digits.length <= 3) {
+    return digits;
+  }
+
+  if (digits.length <= 6) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
@@ -27,6 +49,8 @@ const Profile: React.FC = () => {
   });
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
+  const [phoneError, setPhoneError] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -47,7 +71,7 @@ const Profile: React.FC = () => {
           email: parsedProfile.email || "",
           firstName: parsedProfile.firstName || "",
           lastName: parsedProfile.lastName || "",
-          phone: parsedProfile.phone || "",
+          phone: sanitizePhone(parsedProfile.phone || ""),
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
@@ -83,7 +107,7 @@ const Profile: React.FC = () => {
           email: data.email || "",
           firstName: data.firstName || "",
           lastName: data.lastName || "",
-          phone: data.phone || "",
+          phone: sanitizePhone(data.phone || ""),
         }));
       }
     } catch (err) {
@@ -92,10 +116,21 @@ const Profile: React.FC = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const nextValue = name === "phone" ? sanitizePhone(value) : value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: nextValue,
     });
+
+    if (name === "phone") {
+      setPhoneError(nextValue.length === 0 || nextValue.length === 10 ? "" : "Phone number must be 10 digits");
+    }
+
+    if (name === "email") {
+      setEmailError(nextValue.trim() === "" || isValidEmail(nextValue) ? "" : "Enter a valid email address");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +157,20 @@ const Profile: React.FC = () => {
         setLoading(false);
         return;
       }
+    }
+
+    if (formData.phone.length > 0 && formData.phone.length !== 10) {
+      setPhoneError("Phone number must be 10 digits");
+      setError("Phone number must be 10 digits");
+      setLoading(false);
+      return;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      setEmailError("Enter a valid email address");
+      setError("Enter a valid email address");
+      setLoading(false);
+      return;
     }
 
     try {
@@ -200,7 +249,7 @@ const Profile: React.FC = () => {
           <div className={section}>
             <div className={h2}>Account Information</div>
 
-            <form onSubmit={handleSubmit} className={stack}>
+            <form onSubmit={handleSubmit} className={stack} noValidate>
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                   {error}
@@ -245,9 +294,18 @@ const Profile: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  onBlur={() => {
+                    setEmailError(
+                      formData.email.trim() === "" || isValidEmail(formData.email) ? "" : "Enter a valid email address",
+                    );
+                  }}
                   className={input}
+                  inputMode="email"
+                  placeholder="name@example.com"
+                  aria-invalid={emailError ? "true" : "false"}
                   required
                 />
+                {emailError ? <div className="mt-2 text-sm text-red-700">{emailError}</div> : null}
               </div>
 
               <div>
@@ -255,11 +313,20 @@ const Profile: React.FC = () => {
                 <input
                   type="tel"
                   name="phone"
-                  value={formData.phone}
+                  value={formatPhone(formData.phone)}
                   onChange={handleChange}
+                  onBlur={() => {
+                    setPhoneError(
+                      formData.phone.length === 0 || formData.phone.length === 10 ? "" : "Phone number must be 10 digits",
+                    );
+                  }}
                   className={input}
-                  placeholder="(123) 456-7890"
+                  placeholder="555-555-5555"
+                  inputMode="numeric"
+                  maxLength={12}
+                  aria-invalid={phoneError ? "true" : "false"}
                 />
+                {phoneError ? <div className="mt-2 text-sm text-red-700">{phoneError}</div> : null}
               </div>
 
               <div>

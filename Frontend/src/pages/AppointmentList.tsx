@@ -127,7 +127,17 @@ function AppointmentList() {
           </div>
         ) : appointments.length === 0 ? (
           <div className={emptyState}>
-            No appointments yet. <Link to="/appointments/create">Book one</Link>.
+            <div className="mx-auto max-w-md text-center">
+              <div className="text-lg font-semibold text-emerald-950">No appointments scheduled</div>
+              <div className={`mt-2 ${muted}`}>
+                You are logged in, but you do not have any appointments yet.
+              </div>
+              <div className="mt-5 flex justify-center">
+                <Link to="/appointments/create" className={`${button} ${buttonSecondary}`}>
+                  Book Now
+                </Link>
+              </div>
+            </div>
           </div>
         ) : (
           <div className={grid2}>

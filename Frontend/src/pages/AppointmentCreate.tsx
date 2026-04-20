@@ -212,7 +212,7 @@ function AppointmentCreate() {
     if (!userProfile) return "";
     try {
       const profile = JSON.parse(userProfile);
-      return profile.phone || "";
+      return formatPhoneNumber(profile.phone || "");
     } catch (e) {
       return "";
     }
