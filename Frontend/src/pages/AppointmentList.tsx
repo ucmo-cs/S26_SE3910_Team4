@@ -23,6 +23,7 @@ type Appointment = {
 function AppointmentList() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
 
   const isLoggedIn = useMemo(() => {
     try {
@@ -37,6 +38,7 @@ function AppointmentList() {
     async function fetchAppointments() {
       const userId = localStorage.getItem("authUser") || "guest";
       try {
+        setError("");
         const response = await fetch(`http://localhost:8080/api/appointments?userId=${encodeURIComponent(userId)}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -44,17 +46,9 @@ function AppointmentList() {
         const data: Appointment[] = await response.json();
         setAppointments(data.sort((a, b) => `${a.dateLabel} ${a.timeLabel}`.localeCompare(`${b.dateLabel} ${b.timeLabel}`)));
       } catch (e) {
-        console.warn("Failed to fetch appointments from backend, falling back to localStorage", e);
-        // Fallback to localStorage
-        try {
-          const raw = localStorage.getItem("appointments");
-          const stored: Appointment[] = raw ? JSON.parse(raw) : [];
-          setAppointments(stored
-            .slice()
-            .sort((a: Appointment, b: Appointment) => `${a.dateLabel} ${a.timeLabel}`.localeCompare(`${b.dateLabel} ${b.timeLabel}`)));
-        } catch (localError) {
-          console.warn("Failed to read from localStorage too", localError);
-        }
+        console.warn("Failed to fetch appointments from backend", e);
+        setAppointments([]);
+        setError("Could not load appointments from the backend. The list below is no longer using stale browser data.");
       } finally {
         setLoading(false);
       }
@@ -121,6 +115,13 @@ function AppointmentList() {
               <Link to="/login" className={`${button} ${buttonSecondary}`}>
                 Go to Login
               </Link>
+            </div>
+          </div>
+        ) : error ? (
+          <div className={emptyState}>
+            <div className="mx-auto max-w-md text-center">
+              <div className="text-lg font-semibold text-red-800">Appointments unavailable</div>
+              <div className={`mt-2 ${muted}`}>{error}</div>
             </div>
           </div>
         ) : appointments.length === 0 ? (

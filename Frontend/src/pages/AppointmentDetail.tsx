@@ -26,6 +26,7 @@ function AppointmentDetail() {
   const appointmentId = params.appointmentId ?? "unknown";
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     async function fetchAppointment() {
@@ -39,6 +40,7 @@ function AppointmentDetail() {
 
       // Try to fetch from backend
       try {
+        setError("");
         const response = await fetch(`http://localhost:8080/api/appointments/${appointmentId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,16 +48,9 @@ function AppointmentDetail() {
         const data: Appointment = await response.json();
         setAppointment(data);
       } catch (e) {
-        console.warn("Failed to fetch appointment from backend, falling back to localStorage", e);
-        // Fallback to localStorage
-        try {
-          const raw = localStorage.getItem("appointments");
-          const arr: Appointment[] = raw ? JSON.parse(raw) : [];
-          const found = arr.find((a) => a.id.toString() === appointmentId) ?? null;
-          setAppointment(found);
-        } catch (localError) {
-          console.warn("Failed to read from localStorage too", localError);
-        }
+        console.warn("Failed to fetch appointment from backend", e);
+        setAppointment(null);
+        setError("Could not load this appointment from the backend.");
       } finally {
         setLoading(false);
       }
@@ -95,7 +90,7 @@ function AppointmentDetail() {
 
               <div className={divider} />
 
-              <div>Appointment not found.</div>
+              <div>{error || "Appointment not found."}</div>
             </div>
           </Card>
 

@@ -6,13 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="f57749f2-e95a-49b6-b75c-239280d0c069" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/pages/AppointmentCreate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/AppointmentCreate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/pages/AppointmentDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/AppointmentDetail.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/pages/AppointmentList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/AppointmentList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/pages/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/Login.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/pages/Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/Profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/pages/Register.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/Register.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +16,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1143" />
+    <option name="cachedIndexableFilesCount" value="1144" />
   </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
@@ -169,6 +165,9 @@
       <workItem from="1776446023811" duration="684000" />
       <workItem from="1776716005582" duration="1485000" />
       <workItem from="1776793022389" duration="558000" />
+      <workItem from="1776793584672" duration="29000" />
+      <workItem from="1776793673934" duration="3000" />
+      <workItem from="1776797845453" duration="1989000" />
     </task>
     <servers />
   </component>
