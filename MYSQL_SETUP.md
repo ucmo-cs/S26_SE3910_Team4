@@ -1,48 +1,64 @@
 # Database Setup Guide
 
-## Current Configuration (H2 for Development)
+## Current Configuration (MySQL)
 
-Your project is currently configured to use **H2 in-memory database** for easy development setup. No MySQL installation required!
+Your project is configured to use **MySQL database**. All data persists in your local MySQL server.
 
 ## Database Configuration
 Currently configured in `Backend/src/main/resources/application.properties`:
-- **Database**: H2 in-memory (testdb)
-- **Host**: In-memory
-- **Username**: sa
-- **Password**: (blank)
-- **DDL Auto Mode**: create-drop (recreates tables on each restart)
+- **Database**: MySQL (team4_db)
+- **Host**: localhost:3306
+- **Username**: root
+- **Password**: 8459
+- **DDL Auto Mode**: update (automatically creates/updates tables on startup)
 
-## For Development (Current Setup)
+## Prerequisites
+1. **MySQL installed** on your local machine
+2. **Java 17+ installed** - Required for Spring Boot
+3. **Node.js installed** - Required for frontend
 
-The backend is already configured to use H2 database:
-- No installation required
-- Data persists only during application runtime
-- H2 console available at: `http://localhost:8080/h2-console`
-- JDBC URL: `jdbc:h2:mem:testdb`
+## Setup Instructions
 
-### Setup Steps:
-1. **Backend is already running** with H2 database
-2. **Frontend is running** on `http://localhost:5173`
-3. **Test the appointment system** - reservation logic is working!
-
-## For Production (MySQL Setup)
-
-When ready to deploy with MySQL, modify `Backend/src/main/resources/application.properties`:
-
-```properties
-# Uncomment MySQL config and comment out H2
-spring.datasource.url=jdbc:mysql://localhost:3306/team4_db
-spring.datasource.username=your_mysql_username
-spring.datasource.password=your_mysql_password
-spring.jpa.hibernate.ddl-auto=update
+### Step 1: Verify MySQL is Running
+```bash
+mysql -u root -p
 ```
 
-### MySQL Setup Steps:
-1. Install MySQL on your local machine
-2. Create a database: `CREATE DATABASE IF NOT EXISTS team4_db;`
-3. Create a MySQL user with appropriate permissions
-4. Update the application.properties file with your database details
-5. Restart the backend
+### Step 2: Create Database and User
+In MySQL Command Line Client:
+
+```sql
+CREATE DATABASE IF NOT EXISTS team4_db;
+CREATE USER 'root'@'localhost' IDENTIFIED BY '8459';
+GRANT ALL PRIVILEGES ON team4_db.* TO 'root'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+### Step 3: Start the Backend
+```bash
+cd Backend
+.\mvnw.cmd spring-boot:run
+```
+
+Wait for it to start (takes 30-60 seconds). You should see:
+```
+Started BackendApplication in X seconds
+```
+
+The application will:
+- Connect to MySQL database
+- Automatically create all required tables
+- Seed initial data (Topics and Branches) on first run
+
+### Step 4: Start the Frontend
+Open a new terminal and run:
+```bash
+cd Frontend
+npm run dev
+```
+
+Navigate to `http://localhost:5173`
 
 ## Tables Created Automatically
 
@@ -83,44 +99,6 @@ Stores user account information
 - `last_name` (VARCHAR)
 - `phone` (VARCHAR)
 
-## Current Status
-
-✅ **Backend**: Running on port 8080 with H2 database  
-✅ **Frontend**: Running on port 5173  
-✅ **Database**: H2 in-memory with auto-created tables  
-✅ **Reservation System**: Implemented and working  
-
-## Setup Instructions
-
-### Prerequisites
-1. **Java 17+ installed** - Required for Spring Boot
-2. **Node.js installed** - Required for frontend
-3. **No MySQL required** - Using H2 in-memory database
-
-### Step 1: Start the Backend
-```bash
-cd Backend
-java -jar target/backend-0.0.1-SNAPSHOT.jar
-```
-Or with Maven:
-```bash
-cd Backend
-.\mvnw.cmd spring-boot:run
-```
-
-The application will:
-- Connect to H2 in-memory database
-- Automatically create all required tables
-- Seed initial data (Topics and Branches) on first run
-
-### Step 2: Start the Frontend
-```bash
-cd Frontend
-npm run dev
-```
-
-Navigate to `http://localhost:5173`
-
 ## Initial Data
 The DatabaseSeeder automatically populates:
 - **6 Topics**: Checking & Savings, Credit Cards, Auto Loans, Home Loans, Small Business, Financial Planning
@@ -128,29 +106,36 @@ The DatabaseSeeder automatically populates:
 
 Each branch is configured with specific applicable topic services.
 
-## H2 Console Access
+## Verify Tables Were Created
 
-Access the H2 database console at: `http://localhost:8080/h2-console`
-- **JDBC URL**: `jdbc:h2:mem:testdb`
-- **Username**: `sa`
-- **Password**: (leave blank)
+In MySQL Command Line Client or Workbench:
+```sql
+USE team4_db;
+SHOW TABLES;
+SELECT * FROM topics;
+SELECT * FROM branches;
+```
+
+You should see 4 tables: `appointments`, `branches`, `topics`, `users`
 
 ## Troubleshooting
 
 ### Backend Won't Start
-- Ensure no other application is using port 8080
-- Check that the jar file exists in `Backend/target/`
-- Verify Java is installed: `java -version`
+- Ensure MySQL is running: `mysql -u root -p`
+- Verify database exists: `SHOW DATABASES;`
+- Check credentials in `application.properties`
+- Ensure no other app is using port 8080
 
 ### Frontend Issues
 - Ensure port 5173 is available
 - Check that Node.js and npm are installed
 - Run `npm install` if dependencies are missing
 
-### Database Issues
-- H2 is in-memory, so data resets on restart
-- For persistent data, switch to MySQL configuration
-- Check backend logs for connection errors
+### Database Connection Issues
+- MySQL not running - start MySQL service
+- Wrong credentials - verify username/password
+- Database doesn't exist - create it with SQL commands above
+- Port already in use - change in `application.properties`
 
 ### Port Already in Use
 - Backend default: 8080
@@ -172,16 +157,23 @@ Backend/
 │   └── UserRepository.java
 ├── controller/
 │   ├── AppointmentController.java
+│   ├── TestController.java
 │   └── UserController.java
-└── seeder/
-    └── DatabaseSeeder.java
+├── seeder/
+│   └── DatabaseSeeder.java
+└── pom.xml
 
 Frontend/
 ├── src/
 │   ├── pages/
 │   │   ├── AppointmentCreate.tsx
 │   │   ├── AppointmentList.tsx
-│   │   └── ...
+│   │   ├── AppointmentDetail.tsx
+│   │   ├── Home.tsx
+│   │   ├── Login.tsx
+│   │   ├── Register.tsx
+│   │   ├── Profile.tsx
+│   │   └── NotFound.tsx
 │   └── components/
 │       ├── ui/
 │       └── layout/
