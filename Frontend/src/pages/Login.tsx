@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>("");
@@ -7,6 +7,8 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectPath = location.state?.from?.pathname ?? "/";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +27,9 @@ const Login: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Login successful
         localStorage.setItem("authUser", data.username);
         localStorage.setItem("userProfile", JSON.stringify(data));
-        navigate("/");
+        navigate(redirectPath, { replace: true });
       } else {
         setError(data.error || "Login failed");
       }

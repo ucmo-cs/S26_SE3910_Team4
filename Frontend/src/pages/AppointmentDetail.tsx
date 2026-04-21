@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useParams, Link } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
@@ -26,7 +26,6 @@ function AppointmentDetail() {
   const appointmentId = params.appointmentId ?? "unknown";
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAppointment() {
@@ -56,7 +55,6 @@ function AppointmentDetail() {
           setAppointment(found);
         } catch (localError) {
           console.warn("Failed to read from localStorage too", localError);
-          setError("Appointment not found");
         }
       } finally {
         setLoading(false);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
 import { page, stack, section, grid2 } from "../styles/layout";
@@ -24,6 +24,8 @@ const Register: React.FC = () => {
   const [phoneError, setPhoneError] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectPath = location.state?.from?.pathname ?? "/";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -94,12 +96,10 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Registration successful - store both username and full profile
         if (data.username) {
           localStorage.setItem("authUser", data.username);
           localStorage.setItem("userProfile", JSON.stringify(data));
-          // Navigate to home, which will show personalized welcome
-          navigate("/");
+          navigate(redirectPath, { replace: true });
         } else {
           setError("Registration response missing username");
         }

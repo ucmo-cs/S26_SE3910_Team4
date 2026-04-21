@@ -23,7 +23,6 @@ type Appointment = {
 function AppointmentList() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const isLoggedIn = useMemo(() => {
     try {
@@ -55,7 +54,6 @@ function AppointmentList() {
             .sort((a: Appointment, b: Appointment) => `${a.dateLabel} ${a.timeLabel}`.localeCompare(`${b.dateLabel} ${b.timeLabel}`)));
         } catch (localError) {
           console.warn("Failed to read from localStorage too", localError);
-          setError("Failed to load appointments");
         }
       } finally {
         setLoading(false);

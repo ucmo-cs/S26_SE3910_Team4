@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
 import { page, stack, section, grid2 } from "../styles/layout";
-import { button, buttonPrimary, buttonGhost, divider, h2, input, label, muted } from "../styles/ui";
+import { button, buttonPrimary, divider, h2, input, label, muted } from "../styles/ui";
 
 interface UserProfile {
   id: number;

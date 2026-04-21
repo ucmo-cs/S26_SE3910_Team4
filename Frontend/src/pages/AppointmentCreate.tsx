@@ -3,8 +3,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Card from "../components/ui/Card";
 import PageHeader from "../components/ui/PageHeader";
 import Stepper from "../components/ui/Stepper";
-import { page, stack, section, grid2, rowBetween, row } from "../styles/layout";
-import { button, buttonPrimary, buttonGhost, buttonSecondary, divider, h2, input, label, muted } from "../styles/ui";
+import { page, stack, section, grid2, rowBetween } from "../styles/layout";
+import { button, buttonPrimary, buttonGhost, buttonSecondary, h2, input, label, muted } from "../styles/ui";
 
 type Topic = { id: string; name: string; summary: string };
 type Branch = { id: string; name: string; address: string; topicIds: string[] };
@@ -318,20 +318,6 @@ function AppointmentCreate() {
     step === "confirm";
   const showEmailError = step === "details" && customerEmail.trim().length > 0 && !isValidEmail(customerEmail);
   const showPhoneError = step === "details" && customerPhone.trim().length > 0 && !isValidPhoneNumber(customerPhone);
-
-  function saveAppointment(appointment: Appointment) {
-    try {
-      const raw = localStorage.getItem("appointments");
-      const arr = raw ? JSON.parse(raw) : [];
-      arr.push(appointment);
-      localStorage.setItem("appointments", JSON.stringify(arr));
-      console.debug("saveAppointment: success", appointment);
-      return true;
-    } catch (e) {
-      console.warn("failed to persist appointment", e);
-      return false;
-    }
-  }
 
   async function saveAppointmentToBackend(appointment: Omit<Appointment, 'id'>) {
     try {
