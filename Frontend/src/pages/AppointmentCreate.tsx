@@ -219,6 +219,8 @@ function AppointmentCreate() {
   });
   const [comments, setComments] = useState("");
   const [weekStartIndex, setWeekStartIndex] = useState(0);
+  const [bookedTimes, setBookedTimes] = useState<string[]>([]);
+  const [bookingError, setBookingError] = useState("");
 
   const currentIndex = useMemo(() => {
     if (step === "topic") return 0;
@@ -259,6 +261,37 @@ function AppointmentCreate() {
     setWeekStartIndex(0);
     setStep("branch");
   }, [initialTopicId]);
+
+  useEffect(() => {
+    if (branchId && selectedDateKey) {
+      fetchBookedTimes();
+    } else {
+      setBookedTimes([]);
+    }
+  }, [branchId, selectedDateKey]);
+
+  async function fetchBookedTimes() {
+    // Get the formatted date label for the selected date
+    const selectedDate = availableDates.find(date => date.key === selectedDateKey);
+    const formattedDateLabel = selectedDate ? selectedDate.label : selectedDateKey;
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/appointments/booked-times?branchId=${branchId}&dateLabel=${formattedDateLabel}`);
+      if (response.ok) {
+        const times: string[] = await response.json();
+        setBookedTimes(times);
+        // If the currently selected slot is now booked, deselect it
+        if (selectedSlot && times.includes(selectedSlot.timeLabel)) {
+          setSlotId("");
+        }
+      } else {
+        setBookedTimes([]);
+      }
+    } catch (e) {
+      console.warn("Failed to fetch booked times", e);
+      setBookedTimes([]);
+    }
+  }
 
   function goNext() {
     if (step === "topic") setStep("branch");
@@ -310,20 +343,24 @@ function AppointmentCreate() {
         body: JSON.stringify(appointment),
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        const savedAppointment = await response.json();
+        console.debug("saveAppointmentToBackend: success", savedAppointment);
+        return { success: true, data: savedAppointment };
+      } else if (response.status === 409) {
+        const errorMessage = await response.text();
+        return { success: false, error: errorMessage };
+      } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const savedAppointment = await response.json();
-      console.debug("saveAppointmentToBackend: success", savedAppointment);
-      return savedAppointment;
     } catch (e) {
       console.warn("failed to save appointment to backend", e);
-      return null;
+      return { success: false, error: "Failed to connect to server" };
     }
   }
 
   async function submitMock() {
+    setBookingError("");
     const userId = localStorage.getItem("authUser") || "guest";
     const appointmentData = {
       topicId: selectedTopic?.id ?? "",
@@ -342,22 +379,15 @@ function AppointmentCreate() {
     console.debug("submitMock: attempting to save to backend", appointmentData);
 
     // Try to save to backend first
-    const savedAppointment = await saveAppointmentToBackend(appointmentData);
+    const result = await saveAppointmentToBackend(appointmentData);
 
-    if (savedAppointment) {
+    if (result.success) {
       // Success - navigate with the saved appointment
-      navigate(`/appointments/${savedAppointment.id}`, { state: savedAppointment });
+      navigate(`/appointments/${result.data.id}`, { state: result.data });
     } else {
-      // Fallback to localStorage
-      console.warn("Backend save failed, falling back to localStorage");
-      const id = `a-${Date.now()}`;
-      const localAppointment = { id, ...appointmentData };
-      const ok = saveAppointment(localAppointment);
-      if (!ok) {
-        alert("Failed to save appointment to localStorage (see console).");
-        return;
-      }
-      navigate(`/appointments/${id}`, { state: localAppointment });
+      // Show error
+      setBookingError(result.error || "Failed to book appointment");
+      // Do not fall back to localStorage for conflicts
     }
   }
 
@@ -544,18 +574,27 @@ function AppointmentCreate() {
               </div>
 
               <div className={grid2}>
-                {availableSlots.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className={`min-h-11 py-1.5 ${
-                      s.id === slotId ? "bg-emerald-700 text-white" : "bg-white border border-emerald-300"
-                    } ${button}`}
-                    onClick={() => setSlotId(s.id)}
-                  >
-                    <span className="text-sm font-semibold">{s.timeLabel}</span>
-                  </button>
-                ))}
+                {availableSlots.map((s) => {
+                  const isBooked = bookedTimes.includes(s.timeLabel);
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      disabled={isBooked}
+                      className={`min-h-11 py-1.5 ${button} ${
+                        isBooked
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          : s.id === slotId
+                          ? "bg-emerald-700 text-white"
+                          : "bg-white border border-emerald-300 hover:bg-emerald-50"
+                      }`}
+                      onClick={() => !isBooked && setSlotId(s.id)}
+                    >
+                      <span className="text-sm font-semibold">{s.timeLabel}</span>
+                      {isBooked && <span className="text-sm text-gray-400 ml-2">Reserved</span>}
+                    </button>
+                  );
+                })}
               </div>
 
               {availableSlots.length === 0 ? (
@@ -679,6 +718,13 @@ function AppointmentCreate() {
                   </div>
                 )}
               </div>
+
+              {bookingError && (
+                <div className="mt-4 rounded-lg bg-red-50 p-4 border border-red-200">
+                  <div className="font-semibold text-red-950 mb-1">Booking Error</div>
+                  <p className="text-red-700">{bookingError}</p>
+                </div>
+              )}
 
               <div className="mt-8 flex gap-3">
                 <button type="button" className={`${button} ${buttonPrimary} flex-1`} onClick={submitMock}>

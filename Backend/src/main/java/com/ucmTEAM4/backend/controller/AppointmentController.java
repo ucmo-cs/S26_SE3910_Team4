@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -19,8 +20,15 @@ public class AppointmentController {
     private AppointmentRepository appointmentRepository;
 
     @PostMapping
-    public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
+    public ResponseEntity<?> createAppointment(@RequestBody Appointment appointment) {
         try {
+            // Check for existing appointment at the same time
+            List<Appointment> existing = appointmentRepository.findByBranchIdAndDateLabelAndTimeLabel(
+                appointment.getBranchId(), appointment.getDateLabel(), appointment.getTimeLabel());
+            if (!existing.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("The selected time slot is already booked.");
+            }
+
             // Set userId if not provided (for backward compatibility)
             if (appointment.getUserId() == null || appointment.getUserId().isEmpty()) {
                 appointment.setUserId("guest"); // Default for unauthenticated users
@@ -30,6 +38,13 @@ public class AppointmentController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/booked-times")
+    public ResponseEntity<List<String>> getBookedTimes(@RequestParam String branchId, @RequestParam String dateLabel) {
+        List<Appointment> appointments = appointmentRepository.findByBranchIdAndDateLabel(branchId, dateLabel);
+        List<String> bookedTimes = appointments.stream().map(Appointment::getTimeLabel).collect(Collectors.toList());
+        return ResponseEntity.ok(bookedTimes);
     }
 
     @GetMapping
