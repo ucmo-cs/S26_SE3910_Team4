@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { button, buttonPrimary, input } from "../styles/ui";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>("");
@@ -41,112 +42,94 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title as any}>Welcome Back</h2>
-        <p style={styles.subtitle as any}>Sign in to your Commerce Bank account</p>
-        <form onSubmit={handleLogin}>
-          {error && (
-            <div style={{ color: "#dc2626", marginBottom: "16px", padding: "12px", backgroundColor: "#fee2e2", border: "1px solid #fecaca", borderRadius: "8px", fontSize: "14px" }}>
-              {error}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 px-4 py-10 text-slate-50">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 rounded-[2rem] bg-white/10 p-6 shadow-2xl shadow-slate-950/20 ring-1 ring-white/10 backdrop-blur-xl sm:p-10 lg:grid lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div className="space-y-6">
+          <div className="inline-flex items-center rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100 shadow-sm shadow-black/10">
+            Secure banking portal
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Welcome back to Commerce Bank</h1>
+            <p className="max-w-xl text-sm text-emerald-100/90 sm:text-base">
+              Sign in to view appointments, manage your profile, and access personalized banking services.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-3xl bg-white/10 p-5 shadow-sm ring-1 ring-white/10">
+              <p className="text-sm font-semibold text-white">Fast access</p>
+              <p className="mt-2 text-sm text-emerald-100/85">Login quickly and keep your session secure with modern authentication.</p>
             </div>
-          )}
-
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setUsername(e.target.value)
-            }
-            style={styles.input}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPassword(e.target.value)
-            }
-            style={styles.input}
-            required
-          />
-
-          <button type="submit" style={{...styles.button, opacity: loading ? 0.7 : 1}} disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-
-        <div style={{ textAlign: "center", marginTop: "24px", borderTop: "1px solid #e5e7eb", paddingTop: "24px" }}>
-          <span style={{ color: "#666", fontSize: "14px" }}>Don't have an account? </span>
-          <Link to="/register" style={styles.link as any} onMouseEnter={(e: any) => (e.currentTarget.style.color = "#047857")} onMouseLeave={(e: any) => (e.currentTarget.style.color = "#059669")}>
-            Create one
-          </Link>
+            <div className="rounded-3xl bg-white/10 p-5 shadow-sm ring-1 ring-white/10">
+              <p className="text-sm font-semibold text-white">Appointment tools</p>
+              <p className="mt-2 text-sm text-emerald-100/85">Reserve services, check schedules, and manage your appointments from one dashboard.</p>
+            </div>
+          </div>
         </div>
+
+        <section className="rounded-[1.75rem] bg-white p-8 shadow-2xl shadow-slate-950/10 ring-1 ring-slate-900/5 sm:p-10">
+          <div className="mb-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">Member login</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900">Sign in to your account</h2>
+            <p className="mt-2 text-sm text-slate-500">Enter the credentials provided by your branch or account administrator.</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label htmlFor="username" className="block text-sm font-medium text-slate-700">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+                className={`${input} border-slate-300 bg-slate-50 text-slate-900`}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                className={`${input} border-slate-300 bg-slate-50 text-slate-900`}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className={`${button} ${buttonPrimary} w-full justify-center text-sm font-semibold`}
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+
+          <div className="mt-6 border-t border-slate-200 pt-4 text-center text-sm text-slate-600">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-semibold text-emerald-700 hover:text-emerald-800">
+              Create one
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
-  },
-  card: {
-    padding: "40px",
-    borderRadius: "12px",
-    backgroundColor: "white",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
-    width: "100%",
-    maxWidth: "400px",
-  },
-  title: {
-    fontSize: "24px",
-    fontWeight: "600",
-    marginBottom: "8px",
-    color: "#065f46",
-  },
-  subtitle: {
-    fontSize: "14px",
-    color: "#6b7280",
-    marginBottom: "24px",
-  },
-  input: {
-    display: "block",
-    width: "100%",
-    padding: "12px",
-    marginBottom: "16px",
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    boxSizing: "border-box" as const,
-  },
-  button: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#059669",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
-  },
-  link: {
-    color: "#059669",
-    textDecoration: "none",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "color 0.2s",
-  },
 };
 
 export default Login;
