@@ -2,6 +2,7 @@ package com.ucmTEAM4.backend.controller;
 
 import com.ucmTEAM4.backend.entity.Appointment;
 import com.ucmTEAM4.backend.repository.AppointmentRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +14,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/appointments")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
+@CrossOrigin(origins = "*")
 public class AppointmentController {
 
     @Autowired
     private AppointmentRepository appointmentRepository;
 
     @PostMapping
-    public ResponseEntity<?> createAppointment(@RequestBody Appointment appointment) {
+    public ResponseEntity<?> createAppointment(@Valid @RequestBody Appointment appointment) {
         try {
             // Check for existing appointment at the same time
             List<Appointment> existing = appointmentRepository.findByBranchIdAndDateLabelAndTimeLabel(

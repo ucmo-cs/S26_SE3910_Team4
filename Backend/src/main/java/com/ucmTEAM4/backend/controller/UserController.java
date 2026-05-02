@@ -2,6 +2,7 @@ package com.ucmTEAM4.backend.controller;
 
 import com.ucmTEAM4.backend.entity.User;
 import com.ucmTEAM4.backend.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +14,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
+@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@Valid @RequestBody User user) {
         try {
             // Check if username already exists
             if (userRepository.existsByUsername(user.getUsername())) {
@@ -113,6 +114,11 @@ public class UserController {
         }
     }
 
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<?> getProfileByUsername(@PathVariable String username) {
+        return getProfile(username);
+    }
+
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestParam String username, @RequestBody User updatedUser) {
         try {
@@ -160,5 +166,10 @@ public class UserController {
             error.put("error", "Failed to update profile");
             return ResponseEntity.badRequest().body(error);
         }
+    }
+
+    @PutMapping("/profile/{username}")
+    public ResponseEntity<?> updateProfileByUsername(@PathVariable String username, @RequestBody User updatedUser) {
+        return updateProfile(username, updatedUser);
     }
 }
